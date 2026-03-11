@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>w a i t i n g</title>
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  canvas {
+    display: block;
+    width: 700px;
+    height: 700px;
+    border: 1px solid #000;
+  }
+</style>
+</head>
+<body>
+<canvas id="c" width="700" height="700"></canvas>
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+const cellSize = 100; // distanza tra le parole
+const word = "waiting";
+const wordHover = "writing";
+ctx.font = "20px monospace";
+
+const rows = Math.floor(canvas.height / cellSize);
+const cols = Math.floor(canvas.width / cellSize);
+
+// creiamo la matrice di parole
+let matrix = [];
+for (let i = 0; i < rows; i++) {
+  let row = [];
+  for (let j = 0; j < cols; j++) {
+    row.push({
+      x: j * cellSize + cellSize / 2,
+      y: i * cellSize + cellSize / 2,
+      text: word,
+      hovering: false,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+  matrix.push(row);
+}
+
+// funzione per disegnare
+function draw(t) {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  matrix.forEach(row => {
+    row.forEach(cell => {
+      let alpha = cell.hovering ? 1 : 0.4 + 0.6 * Math.sin(t + cell.phase); // lampeggio
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = "black";
+      ctx.fillText(cell.text, cell.x, cell.y);
+    });
+  });
+
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(time => draw(time * 0.001));
+}
+
+draw(0);
+
+// gestione hover mouse
+canvas.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  matrix.forEach(row => {
+    row.forEach(cell => {
+      const width = ctx.measureText(word).width;
+      const height = 20; // font size
+      if (!cell.hovering &&
+          mx >= cell.x - width/2 &&
+          mx <= cell.x + width/2 &&
+          my >= cell.y - height/2 &&
+          my <= cell.y + height/2) {
+        cell.text = wordHover;
+        cell.hovering = true;
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
